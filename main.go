@@ -4,10 +4,10 @@ import (
 	"fmt"
     "sort"
     "os"
-    "io"
-    "strings"
-	"github.com/armon/consul-api"
+    "io/ioutil"
+    "encoding/json"
     "github.com/docopt/docopt-go"
+    consul "github.com/hashicorp/consul/api"
 )
 
 
@@ -21,7 +21,7 @@ import (
 //    Session     string
 //}
 
-type ByCreateIndex consulapi.KVPairs
+type ByCreateIndex consul.KVPairs
 
 func (a ByCreateIndex) Len() int           { return len(a) }
 func (a ByCreateIndex) Swap(i, j int)      { a[i], a[j] = a[j], a[i] }
@@ -31,11 +31,11 @@ func (a ByCreateIndex) Less(i, j int) bool { return a[i].CreateIndex < a[j].Crea
 
 func backup(ipaddress string, outfile string) {
 
-    config := consulapi.DefaultConfig()
+    config := consul.DefaultConfig()
     config.Address = ipaddress
 
 
-	client, _ := consulapi.NewClient(config)
+	client, _ := consul.NewClient(config)
 	kv := client.KV()
 
 	pairs, _, err := kv.List("/", nil)
@@ -44,51 +44,51 @@ func backup(ipaddress string, outfile string) {
         }
     sort.Sort(ByCreateIndex(pairs))
 
-    outstring := ""
+    outpairs := map[string]string{}
 	for _, element := range pairs {
-        outstring += fmt.Sprintf("%s:%s\n", element.Key, element.Value)
+        outpairs[element.Key] += string(element.Value)
 	}
+
+    data, err := json.MarshalIndent(outpairs, "", " ")
+    if err != nil {
+        panic(err)
+    }
 
     file, err := os.Create(outfile)
     if err != nil {
         panic(err)
     }
 
-    if _, err := file.Write([]byte(outstring)[:]); err != nil {
+    if _, err := file.Write([]byte(data)[:]); err != nil {
         panic(err)
     }
 }
 
-/* File needs to be in the following format:
-    KEY1:VALUE1
-    KEY2:VALUE2
-*/
 func restore(ipaddress string, infile string) {
 
-    config := consulapi.DefaultConfig()
+    config := consul.DefaultConfig()
     config.Address = ipaddress
 
-    file, err := os.Open(infile)
+    data, err := ioutil.ReadFile(infile)
     if err != nil {
-    	panic(err)
+        panic(err)
     }
 
-    data := make([]byte, 100)
-    _, err = file.Read(data)
-    if err != nil && err != io.EOF { panic(err) }
+    inpairs := map[string]string{}
+    err = json.Unmarshal(data, &inpairs)
+    if err != nil {
+        panic(err)
+    }
 
-    client, _ := consulapi.NewClient(config)
+    client, _ := consul.NewClient(config)
     kv := client.KV()
 
-    for _, element := range strings.Split(string(data), "\n") {
-        kvp := strings.Split(element, ":")
-
-        if len(kvp) > 1 {
-            p := &consulapi.KVPair{Key: kvp[0], Value: []byte(kvp[1])}
-            _, err := kv.Put(p, nil)
-            if err != nil {
-                panic(err)
-            }
+    for k, v := range inpairs {
+        fmt.Printf("restoring %s:%s\n", k, v)
+        p := &consul.KVPair{Key: k, Value: []byte(v)}
+        _, err := kv.Put(p, nil)
+        if err != nil {
+            panic(err);
         }
     }
 }
