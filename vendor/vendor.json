@@ -1,0 +1,33 @@
+{
+	"comment": "",
+	"ignore": "test",
+	"package": [
+		{
+			"checksumSHA1": "F+YOz/6ymsuIxUy511OAdxjyhRI=",
+			"path": "github.com/docopt/docopt-go",
+			"revision": "784ddc588536785e7299f7272f39101f7faccc3f",
+			"revisionTime": "2016-02-16T23:20:12Z"
+		},
+		{
+			"checksumSHA1": "ygEjA1d52B1RDmZu8+1WTwkrYDQ=",
+			"path": "github.com/hashicorp/consul/api",
+			"revision": "77dc6fb08e7f7f010189109d7249258f8f01fd77",
+			"revisionTime": "2017-01-26T00:18:48Z"
+		},
+		{
+			"checksumSHA1": "Uzyon2091lmwacNsl1hCytjhHtg=",
+			"origin": "github.com/hashicorp/consul/vendor/github.com/hashicorp/go-cleanhttp",
+			"path": "github.com/hashicorp/go-cleanhttp",
+			"revision": "77dc6fb08e7f7f010189109d7249258f8f01fd77",
+			"revisionTime": "2017-01-26T00:18:48Z"
+		},
+		{
+			"checksumSHA1": "E3Xcanc9ouQwL+CZGOUyA/+giLg=",
+			"origin": "github.com/hashicorp/consul/vendor/github.com/hashicorp/serf/coordinate",
+			"path": "github.com/hashicorp/serf/coordinate",
+			"revision": "77dc6fb08e7f7f010189109d7249258f8f01fd77",
+			"revisionTime": "2017-01-26T00:18:48Z"
+		}
+	],
+	"rootPath": "github.com/ajjohnston/consul-backup"
+}
